@@ -1,4 +1,5 @@
 use sea_orm_migration::{prelude::*, schema::*};
+mod m20220101_000001_create_user_table;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -9,30 +10,31 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Post::Table)
+                    .table(Todo::Table)
                     .if_not_exists()
-                    .col(pk_auto(Post::Id))
-                    .col(string(Post::Done))
-                    .col(string(Post::Text))
+                    .col(pk_auto(Todo::Id))
+                    .col(uuid(Todo::Pid))
+                    .col(foreign(Todo::UserId).references(User::Table, User::Id))
+                    .col(string(Todo::Done))
+                    .col(string(Todo::Content))
                     .to_owned(),
             )
             .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Replace the sample below with your own migration scripts
-        todo!();
-
         manager
-            .drop_table(Table::drop().table(Post::Table).to_owned())
+            .drop_table(Table::drop().table(Todo::Table).to_owned())
             .await
     }
 }
 
 #[derive(DeriveIden)]
-enum Post {
+enum Todo {
     Table,
     Id,
+    Pid,
+    UserId,
     Done,
-    Title,
+    Content,
 }
