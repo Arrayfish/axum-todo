@@ -12,7 +12,9 @@ async fn main() -> anyhow::Result<()> {
     // pass incoming GET requests on "/hello-world" to "hello_world" handler.
     let app = Router::new()
         .route("/hello-world", get(hello_world))
-        .route("/todo", get(todo));
+        .route("/user", get(user).post(user))
+        .route("/todo", get(todo).post(todo))
+        .route("/todo/:id", put(todo).delete(todo));
 
     // write address like this to not make typos
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
