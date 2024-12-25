@@ -12,10 +12,9 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Todo::Table)
                     .if_not_exists()
-                    .col(pk_auto(Todo::Id))
-                    .col(uuid_uniq(Todo::Pid))
-                    .col(uuid_uniq(Todo::UserPid))
-                    .col(string(Todo::Done))
+                    .col(pk_uuid(Todo::Id))
+                    .col(uuid(Todo::UserId))
+                    .col(boolean(Todo::Done))
                     .col(string(Todo::Content))
                     .to_owned(),
             )
@@ -24,8 +23,8 @@ impl MigrationTrait for Migration {
         manager
             .create_foreign_key(ForeignKey::create()
                 .name("FK_todo_user")
-                .from(Todo::Table, Todo::UserPid)
-                .to(User::Table, User::Pid)
+                .from(Todo::Table, Todo::UserId)
+                .to(User::Table, User::Id)
                 .on_delete(ForeignKeyAction::Cascade)
                 .on_update(ForeignKeyAction::Cascade)
                 .to_owned(),
@@ -45,8 +44,7 @@ impl MigrationTrait for Migration {
 enum Todo {
     Table,
     Id,
-    Pid,
-    UserPid,
+    UserId,
     Done,
     Content,
 }

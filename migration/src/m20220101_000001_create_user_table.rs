@@ -13,8 +13,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(User::Table)
                     .if_not_exists()
-                    .col(pk_auto(User::Id))
-                    .col(uuid_uniq(User::Pid))
+                    .col(pk_uuid(User::Id))
                     .col(string(User::Name))
                     .col(string_uniq(User::Email))
                     .col(string(User::Password))
@@ -38,7 +37,6 @@ impl MigrationTrait for Migration {
 pub enum User {
     Table,
     Id,
-    Pid,
     Name,
     Email,
     Password,
