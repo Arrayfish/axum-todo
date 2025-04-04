@@ -1,13 +1,13 @@
 // 一旦DBアクセスも同じところでいいや
-use ::entity::{todo, todo::Entity as Todo};
-use sea_orm::*;
-use sea_orm::ActiveValue::{Set, NotSet, Unchanged};
-use uuid::Uuid;
-use axum::extract::{State, Path, Json};
-use std::sync::Arc;
-use crate::AppState;
-use serde::Deserialize;
 use crate::util::app_error::AppError;
+use crate::AppState;
+use ::entity::{todo, todo::Entity as Todo};
+use axum::extract::{Json, Path, State};
+use sea_orm::ActiveValue::{NotSet, Set, Unchanged};
+use sea_orm::*;
+use serde::Deserialize;
+use std::sync::Arc;
+use uuid::Uuid;
 
 // Query
 pub async fn get_all_todos(
@@ -22,19 +22,21 @@ pub async fn get_all_todos(
 
 pub async fn get_user_todos(
     State(state): State<Arc<AppState>>,
-    Path(user_id): Path<Uuid>, // TODO: 後で直す
+    Path(user_id): Path<Uuid>,
 ) -> anyhow::Result<Json<Vec<todo::Model>>, AppError> {
     println!("get_user_todos called");
     let db = &state.db;
-    let todo_list = Todo::find().filter(todo::Column::UserId.eq(user_id))
-        .all(db).await?;
+    let todo_list = Todo::find()
+        .filter(todo::Column::UserId.eq(user_id))
+        .all(db)
+        .await?;
     println!("{:?}", todo_list);
     Ok(Json(todo_list))
 }
 
 // Command
 #[derive(Deserialize)]
-pub struct CreateTodo{
+pub struct CreateTodo {
     user_id: Uuid,
     content: String,
 }
@@ -54,9 +56,8 @@ pub async fn create_todo(
     Ok(Json(todo))
 }
 
-
 #[derive(Deserialize)]
-pub struct UpdateTodo{
+pub struct UpdateTodo {
     content: Option<String>,
     done: Option<bool>,
 }
@@ -66,8 +67,7 @@ pub async fn update_todo(
     Json(payload): Json<UpdateTodo>,
 ) -> anyhow::Result<Json<todo::Model>, AppError> {
     let db = &state.db;
-    let todo: Option<todo::Model> = Todo::find_by_id(todo_id)
-        .one(db).await?;
+    let todo: Option<todo::Model> = Todo::find_by_id(todo_id).one(db).await?;
     let mut todo: todo::ActiveModel = todo.unwrap().into();
     match payload.content {
         Some(content) => todo.content = Set(content),
@@ -87,8 +87,7 @@ pub async fn delete_todo(
     Path(todo_id): Path<Uuid>,
 ) -> anyhow::Result<(), AppError> {
     let db = &state.db;
-    let todo: Option<todo::Model> = Todo::find_by_id(todo_id)
-        .one(db).await?;
+    let todo: Option<todo::Model> = Todo::find_by_id(todo_id).one(db).await?;
     todo.unwrap().delete(db).await?;
     Ok(())
 }

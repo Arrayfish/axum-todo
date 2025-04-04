@@ -1,23 +1,23 @@
 // 一旦DBアクセスも同じところでいいや
-use ::entity::{user, user::Entity as User};
-use sea_orm::ActiveValue::{Set, NotSet, Unchanged};
-use sea_orm::*;
-use uuid::Uuid;
-use axum::extract::{State, Json};
-use std::sync::Arc;
-use serde::Deserialize;
 use crate::util::app_error::AppError;
+use ::entity::{user, user::Entity as User};
+use axum::extract::{Json, State};
+use sea_orm::ActiveValue::{NotSet, Set, Unchanged};
+use sea_orm::*;
+use serde::Deserialize;
+use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::AppState;
 // Command
 #[derive(Deserialize)]
-pub struct CreateUser{
+pub struct CreateUser {
     name: String,
     email: String,
     password: String,
 }
 pub async fn create_user(
-    State(state): State<Arc<AppState>>, 
+    State(state): State<Arc<AppState>>,
     Json(payload): Json<CreateUser>,
 ) -> anyhow::Result<Json<user::Model>, AppError> {
     let db = &state.db;
@@ -33,7 +33,7 @@ pub async fn create_user(
 }
 
 #[derive(Deserialize)]
-pub struct UpdateUser{
+pub struct UpdateUser {
     user_id: Uuid,
     name: Option<String>,
     email: Option<String>,
@@ -44,8 +44,7 @@ pub async fn update_user(
     Json(payload): Json<UpdateUser>,
 ) -> anyhow::Result<Json<user::Model>> {
     let db = &state.db;
-    let user: Option<user::Model> = User::find_by_id(payload.user_id)
-        .one(db).await?;
+    let user: Option<user::Model> = User::find_by_id(payload.user_id).one(db).await?;
     let mut user: user::ActiveModel = user.unwrap().into();
     match payload.name {
         Some(name) => user.name = Set(name),
@@ -65,16 +64,15 @@ pub async fn update_user(
 }
 
 #[derive(Deserialize)]
-pub struct DeleteUser{
+pub struct DeleteUser {
     user_id: Uuid,
 }
 pub async fn delete_user(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<DeleteUser>,   
+    Json(payload): Json<DeleteUser>,
 ) -> anyhow::Result<()> {
     let db = &state.db;
-    let user: Option<user::Model> = User::find_by_id(payload.user_id)
-        .one(db).await?;
+    let user: Option<user::Model> = User::find_by_id(payload.user_id).one(db).await?;
     user.unwrap().delete(db).await?;
     Ok(())
 }

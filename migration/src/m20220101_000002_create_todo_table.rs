@@ -1,5 +1,5 @@
-use sea_orm_migration::{prelude::*, schema::*};
 use super::m20220101_000001_create_user_table::User;
+use sea_orm_migration::{prelude::*, schema::*};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -21,13 +21,14 @@ impl MigrationTrait for Migration {
             .await?;
 
         manager
-            .create_foreign_key(ForeignKey::create()
-                .name("FK_todo_user")
-                .from(Todo::Table, Todo::UserId)
-                .to(User::Table, User::Id)
-                .on_delete(ForeignKeyAction::Cascade)
-                .on_update(ForeignKeyAction::Cascade)
-                .to_owned(),
+            .create_foreign_key(
+                ForeignKey::create()
+                    .name("FK_todo_user")
+                    .from(Todo::Table, Todo::UserId)
+                    .to(User::Table, User::Id)
+                    .on_delete(ForeignKeyAction::Cascade)
+                    .on_update(ForeignKeyAction::Cascade)
+                    .to_owned(),
             )
             .await?;
         Ok(())
