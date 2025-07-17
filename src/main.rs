@@ -6,28 +6,25 @@ use sea_orm::{Database, DatabaseConnection};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 mod services;
-use services::{session, todo, user};
+use services::{todo, user};
 use std::sync::Arc;
-use std::time::Duration;
-// use tower_http::{trace::TraceLayer, cors::CorsLayer, compression::CompressionLayer, timeout::TimeoutLayer}; # 面倒なので、後でどうにかする
-use tower::ServiceBuilder;
-mod auth;
 mod util;
+use migration::{Migrator, MigratorTrait};
 struct AppState {
     db: DatabaseConnection,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let conn = Database::connect("postgresql://root:password@localhost:5433/postgres").await?;
+    Migrator::up(&conn, None).await?;
     let shared_state = Arc::new(AppState {
-        db: Database::connect("postgresql://root:password@localhost:5433/postgres").await?,
+        db: conn,
     });
     println!("Connected to database");
     // pass incoming GET requests on "/hello-world" to "hello_world" handler.
     let app = Router::new()
         .route("/hello-world", get(hello_world))
-        .route("/login", post(session::login))
-        .route("/logout", get(session::logout))
         .route("/users", post(user::create_user))
         .route("/todos", get(todo::get_all_todos).post(todo::create_todo))
         .route(
